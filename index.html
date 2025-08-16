@@ -23,6 +23,7 @@
 
   <script type="text/javascript">
     let motoSound;
+
     function startMotoSound() {
       // Sonido de inicio (una sola vez)
       const motoStart = new Audio("start.wav");
@@ -42,6 +43,22 @@
         motoSound.currentTime = 0; // reinicia
       }
     }
+
+    function startMotoJumpSound() {
+      const motoStart = new Audio("jump.wav");
+      motoStart.play();
+    }
+
+    function startMotoDuckSound() {
+      const motoStart = new Audio("duck.wav");
+      motoStart.play();
+    }
+
+    function startMotoDeadSound() {
+      // Sonido de choque
+      const motoDead = new Audio("dead.wav");
+      motoDead.play();
+    };
 
     function hideClass(name) {
       var myClasses = document.querySelectorAll(name),
@@ -364,6 +381,7 @@
 
             // Si movió más de 30px hacia abajo → duck
             if (deltaY > 10 && !this.crashed) {
+              startMotoDuckSound()
               this.tRex.setSpeedDrop(); // activa el duck
             }
 
@@ -609,38 +627,15 @@
                 e.type == Runner.events.TOUCHSTART && e.currentTarget == this.containerEl ||
                 Runner.keycodes.RESTART[String(e.keyCode)] // SPACE o ENTER o UP
               ) {
-                stopMotoSound(); // 🔇 se corta el sonido de la moto
                 this.restart();
               }
             }
           }
 
-          let touchStartY = null;
-
-          this.containerEl.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
-              touchStartY = e.touches[0].clientY;
-            }
-          }, { passive: true });
-
-          this.containerEl.addEventListener('touchend', (e) => {
-            if (touchStartY === null) return;
-
-            const touchEndY = e.changedTouches[0].clientY;
-            const deltaY = touchEndY - touchStartY;
-
-            // Si movió más de 30px hacia abajo → duck
-            if (deltaY > 30 && !this.crashed) {
-              this.tRex.setSpeedDrop(); // activa el duck
-            }
-
-            touchStartY = null; // reset
-          }, { passive: true });
-
-
           // Speed drop, activated only when jump key is not pressed.
           if (Runner.keycodes.DUCK[e.keyCode] && this.tRex.jumping) {
             e.preventDefault();
+            startMotoDuckSound()
             this.tRex.setSpeedDrop();
           }
         },
@@ -691,6 +686,7 @@
         */
         gameOver: function () {
           stopMotoSound(); // 🔇 se corta el sonido de la moto
+          startMotoDeadSound(); // 🔊 arranca el sonido de la moto
           this.playSound(this.soundFx.HIT);
           vibrate(200);
           this.stop();
@@ -1419,6 +1415,7 @@
         */
         startJump: function () {
           if (!this.jumping) {
+            startMotoJumpSound(); // 🦘 arranca el sonido del salto
             this.update(0, Trex.status.JUMPING);
             this.jumpVelocity = this.config.INIITAL_JUMP_VELOCITY;
             this.jumping = true;
